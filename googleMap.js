@@ -1,52 +1,111 @@
 const URL_ROOT = "https://maps.googleapis.com/maps/api/directions/json?"
 
-function requestComplete(oEvent){
+class GoogleMapApi {
 
-    var resObj = JSON.parse(oEvent.target.response);
-    alert(resObj.routes[0].legs[0].duration.text);
-    return;
+  googleMapPlaceSearch(place){
+
+    const API_PLACE_ROOT = "https://maps.googleapis.com/maps/api/place/textsearch/json?"
+    const url = `${API_PLACE_ROOT}query=${place}+in+melbourn&key=${API_KEY}`;
+
+/*    var gMapReq = new XMLHttpRequest();
+    gMapReq.open("GET", url);
+
+    gMapReq.onload = (oEvent) => {
+      var resObj = JSON.parse(oEvent.target.response);
+      console.log(resObj.results[0].name)
+      return;
+    }
+
+    gMapReq.send()*/
+
+    return encodeURI(url)
+
+  }
+
+  googleMapfindRoute(origin, dest){
+
+    // White space will cause API error, we remove it.
+    var origin = origin.split(" ").join("+");
+    var destItems = dest.split("#");
+    var dest = destItems[0].trim();
+    dest = dest.split(" ").join("+");
+
+    const urlStr = `${URL_ROOT}origin=${origin}&destination=${dest}&mode=transit&key=${API_KEY}`;
+    const url = encodeURI(urlStr);
+
+    return url
+
+    /*var gMapReq = new XMLHttpRequest();
+    gMapReq.open("GET", url);
+
+    gMapReq.onload = (oEvent) => {
+      var resObj = JSON.parse(oEvent.target.response);
+      alert(resObj.routes[0].legs[0].duration.text);
+      return;
+    }
+
+    gMapReq.send()*/
+  }
+
+  googleMapDistancematrix(origin, dest){
+    const API_MATRIX_ROOT = "https://maps.googleapis.com/maps/api/distancematrix/json?";
+
+    var gMapReq = new XMLHttpRequest();
+    gMapReq.addEventListener("load", requestComplete);
+
+    const url = `${API_MATRIX_ROOT}origins=${origin}&destinations=${dest}&mode=transit&key=&{API_KEY}`
+    const url = URL_ROOT + "origins=" + origin + "&destinations=" + dest +"&mode=transit" +  "&key=" + API_KEY;
+    gMapReq.open("GET", url);
+    gMapReq.send()
+
+  }
+
 }
 
+function findRoute(origin, dest, callback){
 
-function googleMapPlaceSearch(place){
+  // promise
+  let request = obj =>{
+    return new Promise((resolve, reject)=>{
+      let req = new XMLHttpRequest();
+      req.open("GET", obj.url);
+      req.onload = (oEvent)=>{
+        if(req.status == 200){
+            resolve(req.response);
+        } else {
+            reject(req.statusText);
+        }
+      }
+      req.send()
+    });
+  }
 
-  const API_PLACE_ROOT = "https://maps.googleapis.com/maps/api/place/textsearch/json?"
-  const url = `${API_PLACE_ROOT}query=${place}+in+melbourn&key=${API_KEY}`;
-  console.log(url);
+  console.log("findRoute");
+  gApiReq = new GoogleMapApi()
+
+  // get origin name
+  request({url: gApiReq.googleMapPlaceSearch(origin) })
+    .then( data=>{
+      let resObj = JSON.parse(data);
+      origin = resObj.results[0].name + resObj.results[0].formatted_address
+      console.log(origin);
+
+    // Get dest name
+    request({url: gApiReq.googleMapPlaceSearch(dest) })
+      .then( data=>{
+
+        let resObj = JSON.parse(data);
+        console.log("Get dest: " + resObj.results[0].name)
+        dest = resObj.results[0].name + resObj.results[0].formatted_address
+        console.log(dest);
+
+        // Get route result
+        request({url: gApiReq.googleMapfindRoute(origin, dest)})
+        .then( data => {
+          var resObj = JSON.parse(data);
+          alert(resObj.routes[0].legs[0].duration.text);
+
+        });
+    });
+  });
 }
-
-function googleMapfindRoute(origin, dest){
-
-  // White space will cause API error, we remove it.
-  origin = origin.split(" ").join("+");
-  destItems = dest.split("#");
-  dest = destItems[0].trim();
-  dest = dest.split(" ").join("+");
-
-  //googleMapPlaceSearch(origin);
-  //googleMapPlaceSearch(dest);
-
-  const urlStr = `${URL_ROOT}origin=${origin}&destination=${dest}&mode=transit&key=${API_KEY}`;
-  const url = encodeURI(urlStr);
-
-  var gMapReq = new XMLHttpRequest();
-  gMapReq.addEventListener("load", requestComplete);
-  gMapReq.open("GET", url);
-  gMapReq.send()
-
-
-}
-
-function googleMapDistancematrix(origin, dest){
-  const API_MATRIX_ROOT = "https://maps.googleapis.com/maps/api/distancematrix/json?";
-
-  var gMapReq = new XMLHttpRequest();
-  gMapReq.addEventListener("load", requestComplete);
-
-  const url = `${API_MATRIX_ROOT}origins=${origin}&destinations=${dest}&mode=transit&key=&{API_KEY}`
-  const url = URL_ROOT + "origins=" + origin + "&destinations=" + dest +"&mode=transit" +  "&key=" + API_KEY;
-  gMapReq.open("GET", url);
-  gMapReq.send()
-
-}
-
