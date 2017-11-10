@@ -38,4 +38,4 @@ console.log(nearBusStops);
 
 // find distense by google map api
 // Show in console.log
-findRoute("Southern cross station", nearStations);
+findRoute("Southern cross station", nearStations, setHelpBlock);

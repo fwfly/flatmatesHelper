@@ -4,6 +4,10 @@ class GoogleMapApi {
 
   googleMapPlaceSearch(place){
 
+    var placeItems = place.split("#");
+    var place = placeItems[0].trim();
+    place = place.split(" ").join("+");
+
     const API_PLACE_ROOT = "https://maps.googleapis.com/maps/api/place/textsearch/json?"
     const url = `${API_PLACE_ROOT}query=${place}+in+melbourn&key=${API_KEY}`;
 
@@ -30,8 +34,8 @@ class GoogleMapApi {
     var dest = destItems[0].trim();
     dest = dest.split(" ").join("+");
 
-    const urlStr = `${URL_ROOT}origin=${origin}&destination=${dest}&mode=transit&key=${API_KEY}`;
-    const url = encodeURI(urlStr);
+    const urlStr = `${URL_ROOT}origin=${origin}&destination=${dest}&mode=transit`;
+    const url = encodeURI(urlStr) + "&key="+API_KEY;
 
     return url
 
@@ -80,7 +84,7 @@ function findRoute(origin, dest, callback){
     });
   }
 
-  console.log("findRoute");
+  console.log("findRoute: " + origin + ", " + dest);
   gApiReq = new GoogleMapApi()
 
   // get origin name
@@ -104,7 +108,7 @@ function findRoute(origin, dest, callback){
         .then( data => {
           var resObj = JSON.parse(data);
           alert(resObj.routes[0].legs[0].duration.text);
-
+          callback();
         });
     });
   });
