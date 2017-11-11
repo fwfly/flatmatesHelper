@@ -34,7 +34,7 @@ class GoogleMapApi {
     var dest = destItems[0].trim();
     dest = dest.split(" ").join("+");
 
-    const urlStr = `${URL_ROOT}origin=${origin}&destination=${dest}&mode=transit`;
+    const urlStr = `${URL_ROOT}origin=${origin}&destination=${dest}&mode=transit&language=en`;
     const url = encodeURI(urlStr) + "&key="+API_KEY;
 
     return url
@@ -57,7 +57,7 @@ class GoogleMapApi {
     var gMapReq = new XMLHttpRequest();
     gMapReq.addEventListener("load", requestComplete);
 
-    const url = `${API_MATRIX_ROOT}origins=${origin}&destinations=${dest}&mode=transit&key=&{API_KEY}`
+    const url = `${API_MATRIX_ROOT}origins=${origin}&destinations=${dest}&mode=transit&language=en&key=&{API_KEY}`
     const url = URL_ROOT + "origins=" + origin + "&destinations=" + dest +"&mode=transit" +  "&key=" + API_KEY;
     gMapReq.open("GET", url);
     gMapReq.send()
@@ -99,7 +99,6 @@ function findRoute(origin, dest, callback){
       .then( data=>{
 
         let resObj = JSON.parse(data);
-        console.log("Get dest: " + resObj.results[0].name)
         dest = resObj.results[0].name + resObj.results[0].formatted_address
         console.log(dest);
 
@@ -107,8 +106,12 @@ function findRoute(origin, dest, callback){
         request({url: gApiReq.googleMapfindRoute(origin, dest)})
         .then( data => {
           var resObj = JSON.parse(data);
-          alert(resObj.routes[0].legs[0].duration.text);
-          callback();
+
+          let duration = resObj.routes[0].legs[0].duration.text;
+          callback( {
+              origin: origin,
+              dest:dest,
+              duration : duration} );
         });
     });
   });

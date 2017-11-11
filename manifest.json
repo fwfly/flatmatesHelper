@@ -12,7 +12,7 @@
   "content_scripts":[
     {
       "matches":["https://flatmates.com.au/*"],
-      "js":["googleMap.js","content.js"],
+      "js":["drawHtml.js","googleMap.js","content.js"],
       "run_at":"document_end"
     }
   ],
